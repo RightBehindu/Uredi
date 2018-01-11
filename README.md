@@ -10,3 +10,4 @@ Simply join the site at [Uredi](http://uredi.herokuapp.com), enter a **Youtube**
 
 - [ ] Reduce width and height of lobby chat slightly.
 - [ ] Reduce X offset of video player to include lobby slider.
+- [ ] Include join, leave and video submission events to lobby chat.
