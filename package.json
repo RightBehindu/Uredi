@@ -1,13 +1,25 @@
 {
-  "name": "flashcycle",
+  "name": "Uredi",
   "version": "1.0.0",
-  "description": "Multiplayer game",
+  "description": "Website for watching youtube videos at them same time as your friends!",
   "main": "app.js",
-  "dependencies": {},
+  "dependencies": {}
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js
   },
-  "author": "",
+  "engines": {
+	"node": "0.12.7"
+  },
+  "repository": {
+	"type": "git",
+	"url": "https://github.com/RightBehindu/Uredi"
+  },
+  "keywords": [
+	"node",
+	"heroku",
+	"express"
+  ],
+  "author": "Matthew Bryan",
   "license": "ISC"
 }
