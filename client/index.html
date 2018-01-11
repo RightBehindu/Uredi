@@ -218,6 +218,12 @@
 		}		
 		
 		socket.on("updateLobby", function(data) {
+			var isAdmin = false;
+			for(var i in data.lobby) {
+				if(data.lobby[i].id == localId) {
+					isAdmin = data.lobby[i].isAdmin;
+				}
+			}
 			var lobby = data.lobby;
 			var LobbyList = $("#lobbyList");
 			LobbyList.empty();
@@ -226,12 +232,19 @@
 				if(client) {
 					console.log(client.id);
 					var newElem = $("<li class='lobby_ready'>Client Id: " + client.id + "</li>");
-					var innerElem = $("<button id='"+ client.id.toString() +"' class='makeAdminButton'><b id='" + client.id.toString() + "'>Make Admin</b></button>");
-					innerElem[0].addEventListener("click",  MakeAdmin, false);
-					var innerElem2 = $("<button id='"+ client.id.toString() +"' class='kickbutton'><b id='" + client.id.toString() + "'>Kick</b></button>");
-					innerElem2[0].addEventListener("click", KickUser, false);
-					newElem.append(innerElem);
-					newElem.append(innerElem2);
+					if(isAdmin) {
+						if(!client.isAdmin) {
+							var innerElem = $("<button id='"+ client.id.toString() +"' class='makeAdminButton'><b id='" + client.id.toString() + "'>Make Admin</b></button>");
+							innerElem[0].addEventListener("click",  MakeAdmin, false);
+							newElem.append(innerElem);
+						}
+						if(!client.isOwner) {
+							var innerElem2 = $("<button id='"+ client.id.toString() +"' class='kickbutton'><b id='" + client.id.toString() + "'>Kick</b></button>");
+							innerElem2[0].addEventListener("click", KickUser, false);
+
+							newElem.append(innerElem2);
+						}
+					}
 					LobbyList.append(newElem);
 				}
 			}

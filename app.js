@@ -69,8 +69,9 @@ io.sockets.on('connection', function(socket){
 					}
 					//Choose next admin as owner.
 					for(var i in session.lobby) {
-						if(session.lobby[i].sessionAdmin) {
-							session.lobby[i].sessionOwner = true;
+						if(session.lobby[i].isAdmin) {
+							session.lobby[i].isOwner = true;
+							SOCKET_LIST[session.lobby[i].id].session.sessionOwner = true;
 							break;
 						}
 					}
@@ -97,8 +98,8 @@ io.sockets.on('connection', function(socket){
 		if(SESSIONS[data.sessionId]) {
 			//Join session.
 			var session = SESSIONS[data.sessionId];
-			session.lobby.push({id: socket.id, canQueue: true, videoTime: 0, frozen: false, ready: true});
-			SOCKET_LIST[socket.id].session = {sessionAdmin: true, sessionOwner: false, inSession:true,sessionId:data.sessionId};
+			session.lobby.push({id: socket.id, canQueue: true, videoTime: 0, frozen: false, ready: true, isAdmin: false, isOwner: false});
+			SOCKET_LIST[socket.id].session = {sessionAdmin: false, sessionOwner: false, inSession:true,sessionId:data.sessionId};
 			socket.emit("successJoin", {id: data.sessionId, url: session.currentUrl, isPlaying: session.isPlaying, messages: session.messages});
 			for(var i in session.lobby) {
 				var client = session.lobby[i];
@@ -114,7 +115,7 @@ io.sockets.on('connection', function(socket){
 
 	socket.on("createSession", function(data) {
 		var newSession = new Session(data.sessionId);
-		newSession.lobby.push({id: socket.id, canQueue: true, videoTime: 0, frozen: false, ready: true});
+		newSession.lobby.push({id: socket.id, canQueue: true, videoTime: 0, frozen: false, ready: true, isAdmin: true, isOwner: true});
 		SESSIONS.push(newSession);
 
 		SOCKET_LIST[socket.id].session = {sessionAdmin: true, sessionOwner: true, inSession: true, sessionId: newSession.id};
@@ -127,7 +128,7 @@ io.sockets.on('connection', function(socket){
 		var self = SOCKET_LIST[socket.id];
 		if(self.session.sessionId == "none") {
 			var newSession = new Session(makeid());
-			newSession.lobby.push({id: socket.id, canQueue: true, videoTime: 0, frozen: false, ready: true});
+			newSession.lobby.push({id: socket.id, canQueue: true, videoTime: 0, frozen: false, ready: true, isAdmin: true, isOwner: true});
 			socket.session = {sessionAdmin: true, sessionOwner: true, inSession: true, sessionId: newSession.sessionId};
 			SESSIONS[newSession.sessionId] = (newSession);
 			socket.emit("successJoin", {id: newSession.sessionId, url: "none", messages: newSession.messages});
@@ -246,7 +247,16 @@ io.sockets.on('connection', function(socket){
 		var client = SOCKET_LIST[id];
 		if(client) {
 			client.session.sessionAdmin = true;
+			for(var i in SESSIONS[client.session.sessionId].lobby) {
+				var lobbyClient = SESSIONS[client.session.sessionId].lobby[i];
+				if(lobbyClient) {
+					if(lobbyClient.id == client.id) {
+						lobbyClient.isAdmin = true;
+					}
+				}
+			}
 			client.emit("madeAdmin");
+			client.emit("updateLobby", {lobby: SESSIONS[client.session.sessionId].lobby});
 			console.log("done");
 		}
 

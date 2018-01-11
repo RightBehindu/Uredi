@@ -24,6 +24,7 @@ body {
 	list-style: none;
 	height: 330px;
 }
+
 #lobbySlider ul li {
   padding-top: 20px;
   padding-bottom: 20px;
@@ -212,7 +213,7 @@ body {
   cursor: pointer;
   padding: 5px;
   margin-top: 10px;
-  margin-left: 10px;
+  margin-left: 20px;
 }
 .kickbutton:hover {
   background-color: #7c0e9e;
