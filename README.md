@@ -4,4 +4,4 @@ Uredi is a simple **Node.js** website built using the *express* and *socket.io* 
 
 ## Usage
 
-Simple join the site at [Uredi](http://uredi.herokuapp.com), enter a link and send your new URL to your friends!
+Simply join the site at [Uredi](http://uredi.herokuapp.com), enter a **Youtube** link and send your new URL to your friends!
