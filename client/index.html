@@ -243,6 +243,10 @@
 							innerElem2[0].addEventListener("click", KickUser, false);
 
 							newElem.append(innerElem2);
+						} else {
+							var innerElem2 = $("<br/><small style='margin-left: 0px; color: #7c0e9e;'>Session Owner</small>");
+
+							newElem.append(innerElem2);
 						}
 					}
 					LobbyList.append(newElem);
