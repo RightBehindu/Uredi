@@ -1,0 +1,7 @@
+{
+	"name": "Uredi",
+	"description": "A website to play youtube videos at the same time as your friends",
+	"repository": "https://github.com/RightBehindu/Uredi",
+	"logo": "http://node-js-sample.herokuapp.com/node.svg",
+	"image": "heroku/nodejs"
+}
