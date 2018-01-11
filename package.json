@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Website for watching youtube videos at them same time as your friends!",
   "main": "app.js",
-  "dependencies": {}
+  "dependencies": {},
   "devDependencies": {},
   "scripts": {
     "start": "node app.js
