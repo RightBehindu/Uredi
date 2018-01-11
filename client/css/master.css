@@ -27,6 +27,7 @@ body {
   background-color: black;
 
 }
+
 #lobbySlider h3 {
   margin-top: 20px;
 }
@@ -91,7 +92,7 @@ body {
 
 #videoSlider {
   background-color: #111111;
-  width: 70px;
+  width: 300px;
   height: 405px;
   position: absolute;
   z-index: 0;
@@ -211,3 +212,52 @@ body {
   background-color: #7c0e9e;
   color: white;
 }
+
+#lobbyWrapper {
+	margin-left: 20px;
+
+}
+#lobbyWrapper h3 {
+	text-align: center;
+	color: white;
+	margin-top: 20px;
+}
+#lobbyChat {
+	list-style: none;
+	background-color: #222222;
+	border: 2px solid black;
+	width: 260px;
+	margin-top: 20px;
+	height: 280px;
+}
+#lobbyChat li {
+	margin-left: 20px;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	max-width: 200px;
+	word-wrap: break-word;
+	font-size: 14px;
+}
+#lobbyChatInput {
+	margin-top: 10px;
+	width: 200px;
+	display: inline-block;
+	float: left;
+	margin-left: 2px;
+}
+#sendChatButton {
+	display: inline-block;
+	float: right;
+	margin-top: 8px;
+	margin-right: 20px;
+	background-color: #111111;
+	border: 1px solid #7c0e9e;
+	padding: 3px;
+	color: white;
+	transition: all 0.3s ease;
+}
+
+#sendChatButton:hover {
+	background-color: #7c0e9e;
+}
+

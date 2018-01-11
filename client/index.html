@@ -31,10 +31,23 @@
 			<div id="closeVideoSlider">
 					<b>></b>
 			</div>
+			<!--
 			<div id="options">
 				<ul id="options_list">
 					<li><p><b>+</b></p></li>
 				</ul>
+			</div>
+			-->
+
+			<div id="lobbyWrapper">
+				<h3> Session Lobby </h3>
+				<br/>
+				<hr style="border-color: grey;"/>
+				<ul id="lobbyChat">
+			
+				</ul>
+				<input id="lobbyChatInput" type="text" placeholder="Type your message..." />
+				<button id="sendChatButton" type="button">Send</button>
 			</div>
 		</div>
 
@@ -86,12 +99,17 @@
 		var LobbySliderClosed = true;
 		var Close_Block_Button, Video_Slider, Video_Wrapper, Close_Slider_Button, Input_Slider;
 		var Input_Id, Submit_Video_Button, Video_Input, Lobby_Slider;
+		var Lobby_Chat_Input, Lobby_Chat_Send_Button;
 
 		document.addEventListener("DOMContentLoaded", contentLoader, false);
 
 		function contentLoader() {
 			document.getElementById("userBlock").style.left = window.innerWidth - 300 + "px";
 
+			Lobby_Chat_Input = document.getElementById("lobbyChatInput");
+			Lobby_Chat_Send_Button = document.getElementById("sendChatButton");
+			Lobby_Chat_Send_Button.addEventListener("click", SendMessage, false);
+			
 			Video_Input = document.getElementById("videoInput");
 
 			Lobby_Slider = document.getElementById("lobbySlider");
@@ -107,7 +125,7 @@
 			Video_Wrapper.style.top = Math.floor(window.innerHeight * 0.2) + "px";
 			var valX = parseInt(Video_Wrapper.style.left.substring(0, Video_Wrapper.style.left.length-2));
 			var valY = parseInt(Video_Wrapper.style.top.substring(0, Video_Wrapper.style.top.length-2));
-			Video_Slider.style.left = (valX -70) + "px";
+			Video_Slider.style.left = (valX -300) + "px";
 			Video_Slider.style.top = (valY) + "px";
 			Input_Slider = document.getElementById("inputSlider");
 			Input_Slider.style.left = valX + "px";
@@ -120,6 +138,14 @@
 
 			Input_Id = document.getElementById("invis");
 			Input_Id.addEventListener("focusout", IdChange, false);
+		}
+		
+		function SendMessage() {
+			var message = Lobby_Chat_Input.value;
+			Lobby_Chat_Input.value = "";
+			if(message != "") {
+				socket.emit("newMessage", {message: message});
+			}
 		}
 
 		function ToggleLobbySlider() {
@@ -175,6 +201,22 @@
 			}
 		}
 
+		socket.on("updateChat", function(data) {
+			console.log("got");
+
+			InflateChat(data);
+			
+		});
+		
+		function InflateChat(data) {
+			var chat = $("#lobbyChat");
+			chat.empty();
+			for(var i in data) {
+				var newElem = $("<li>[" + data[i].sender + "]: " + data[i].message + "</li>");
+				chat.append(newElem);
+			}
+		}		
+		
 		socket.on("updateLobby", function(data) {
 			var lobby = data.lobby;
 			var LobbyList = $("#lobbyList");
@@ -251,8 +293,8 @@
 				if(!SliderClosed) {
 					//Close slider...
 					elem.animate({
-						left: "+=50"
-					}, 300);
+						left: "+=280"
+					}, 800);
 					var angle = 180;
 					$({deg: 0}).animate({deg: angle}, {
 							duration: 500,
@@ -268,8 +310,8 @@
 				} else {
 					//Open slider...
 					elem.animate({
-						left: "-=50"
-					}, 300);
+						left: "-=280"
+					}, 800);
 					var angle = 0;
 					$({deg: 180}).animate({deg: angle}, {
 						duation: 500,
@@ -364,6 +406,9 @@
 		});
 
 		socket.on("successJoin", function(data) {
+			$("#lobbyChat").empty();
+			InflateChat(data.messages);
+		
 			document.title = "Uredi | In Session";
 			console.log(data);
 			ChangeUrl("?session=wow", "?session=" + data.id);

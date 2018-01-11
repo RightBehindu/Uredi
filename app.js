@@ -14,7 +14,8 @@ var Session = function(id) {
 		sessionId: id,
 		lobby: [],
 		currentUrl: "none",
-		isPlaying: false
+		isPlaying: false,
+		messages: []
 	};
 	return self;
 }
@@ -98,7 +99,7 @@ io.sockets.on('connection', function(socket){
 			var session = SESSIONS[data.sessionId];
 			session.lobby.push({id: socket.id, canQueue: true, videoTime: 0, frozen: false, ready: true});
 			SOCKET_LIST[socket.id].session = {sessionAdmin: true, sessionOwner: false, inSession:true,sessionId:data.sessionId};
-			socket.emit("successJoin", {id: data.sessionId, url: session.currentUrl, isPlaying: session.isPlaying});
+			socket.emit("successJoin", {id: data.sessionId, url: session.currentUrl, isPlaying: session.isPlaying, messages: session.messages});
 			for(var i in session.lobby) {
 				var client = session.lobby[i];
 				var clientSocket = SOCKET_LIST[client.id];
@@ -129,7 +130,7 @@ io.sockets.on('connection', function(socket){
 			newSession.lobby.push({id: socket.id, canQueue: true, videoTime: 0, frozen: false, ready: true});
 			socket.session = {sessionAdmin: true, sessionOwner: true, inSession: true, sessionId: newSession.sessionId};
 			SESSIONS[newSession.sessionId] = (newSession);
-			socket.emit("successJoin", {id: newSession.sessionId, url: "none"});
+			socket.emit("successJoin", {id: newSession.sessionId, url: "none", messages: newSession.messages});
 		}
 		console.log("Here: " + self.session.sessionId);
 		if(self.session.sessionAdmin || self.session.sessionOwner) {
@@ -267,6 +268,20 @@ io.sockets.on('connection', function(socket){
 			SOCKET_LIST[userId].emit("kicked");
 		}
 	});
+	
+	socket.on("newMessage", function(data) {
+		console.log("asdlkdf");
+		if(socket.session.inSession) {
+			var session = SESSIONS[socket.session.sessionId];
+			if(session) {
+				session.messages.push({message: data.message, sender: socket.id});
+				EmitForLobby(session, "updateChat", session.messages);
+				console.log("emitted");
+			} else {
+				console.log("No session glitch #3!");
+			}
+		}
+	});
 
 	socket.emit('receivedConnect',{id: socket.id});
 
@@ -280,7 +295,7 @@ app.get('/',function(req, res) {
 });
 app.use('/client',express.static(__dirname + '/client'));
 
-serv.listen(process.env.PORT || 2000);
+serv.listen(2000);
 
 function Map(X, A, B, C, D) {
 	return (X-A)/(B-A) * (D-C) + C;
