@@ -237,6 +237,12 @@
 							var innerElem = $("<button id='"+ client.id.toString() +"' class='makeAdminButton'><b id='" + client.id.toString() + "'>Make Admin</b></button>");
 							innerElem[0].addEventListener("click",  MakeAdmin, false);
 							newElem.append(innerElem);
+						} else {
+							if(!client.isOwner) {
+								var innerElem3 = $("<br/><small style='margin-left: 0px; color: red;'>Session Admin</small>");
+								newElem.append(innerElem3);
+							}
+
 						}
 						if(!client.isOwner) {
 							var innerElem2 = $("<button id='"+ client.id.toString() +"' class='kickbutton'><b id='" + client.id.toString() + "'>Kick</b></button>");
@@ -245,9 +251,21 @@
 							newElem.append(innerElem2);
 						} else {
 							var innerElem2 = $("<br/><small style='margin-left: 0px; color: #7c0e9e;'>Session Owner</small>");
-
 							newElem.append(innerElem2);
 						}
+					} else {
+						if(client.isOwner) {
+							var innerElem2 = $("<br/><small style='margin-left: 0px; color: #7c0e9e;'>Session Owner</small>");
+							newElem.append(innerElem2);
+						}
+						
+						if(client.isAdmin) {
+							if(!client.isOwner) {
+								var innerElem3 = $("<br/><small style='margin-left: 0px; color: red;'>Session Admin</small>");
+								newElem.append(innerElem3);
+							}
+						}
+						
 					}
 					LobbyList.append(newElem);
 				}

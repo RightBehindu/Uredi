@@ -256,8 +256,7 @@ io.sockets.on('connection', function(socket){
 				}
 			}
 			client.emit("madeAdmin");
-			client.emit("updateLobby", {lobby: SESSIONS[client.session.sessionId].lobby});
-			console.log("done");
+			EmitForLobby(SESSIONS[client.session.sessionId], "updateLobby", {lobby: SESSIONS[client.session.sessionId].lobby});
 		}
 
 	});
