@@ -1,0 +1,532 @@
+<html>
+	<head>
+		<title> Uredi? | Home </title>
+
+		<link rel="stylesheet" href="client/css/animate.css">
+		<link rel="stylesheet" href="client/css/master.css">
+		<script src="client/js/jquery.min.js"></script>
+		<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+	</head>
+
+
+	<body>
+		<div id="userBlock" class="animated fadeInDown">
+			<div id="closeUserBlock">
+				<b>></b>
+			</div>
+			<div class="content">
+				<h2> User Id </h2>
+				<hr/>
+				<h3 id="userId">#<input onchange="IdChange(this);" type="text" id="invis"/></h3>
+			</div>
+		</div>
+
+
+		<div id="videoWrapper">
+			<!--<iframe id="myPlayer" width="720" height="405" src="https://www.youtube.com/embed/loxqw2iCoAI?enablejsapi=1" frameborder="0" gesture="media" allow="encrypted-media" allowfullscreen></iframe>
+			-->
+			<div id="player"></div>
+		</div>
+		<div id="videoSlider">
+			<div id="closeVideoSlider">
+					<b>></b>
+			</div>
+			<div id="options">
+				<ul id="options_list">
+					<li><p><b>+</b></p></li>
+				</ul>
+			</div>
+		</div>
+
+		<div id="lobbySlider">
+			<h3> Session Lobby </h3>
+			<br/>
+			<hr style="border-color: grey;"/>
+			<ul id="lobbyList">
+
+			</ul>
+		</div>
+
+		<div id="inputSlider">
+			<div class="inputItems">
+				<b><i>Enter Link:</i></b> <input id="videoInput" type="text" placeholder="https://www.youtube.com/..."/>
+				<button id="submitVideo" type="button">Submit</button>
+				<button type="button"> X</button>
+			</div>
+		</div>
+
+	</body>
+	<script src="client/js/Notification.js"></script>
+	<script>
+	// CORE REQUIREMENTS TO DO LIST
+	//-----------------------------------
+	// TODO: Configure new input element in block slider. *
+	// TODO: Configure Youtube url validation and submittion
+ 	// TODO: Configure server-side session lobbies and logic.
+		// TODO: Accept socket emission 'startFailReady'
+		// TODO: Accept socket emission 'startVideo'
+		// TODO: Create context (videoSubmit) for and Accept 'videoLoad' emission.
+		// TODO: Create and Accept 'videoSubmit' emission.
+		// TODO: Create and Accept 'freeze' emission.
+		// TODO: Create and Accept 'pauseVideo' emission.
+		// Estimated Development Time: 1hr - 1hr30mins
+
+		var socket = io();
+		var N = new Notifications();
+		var localId;
+		var ToSet;
+		var ToPause = false;
+
+		//Player variables
+		var InitialStart = true;
+		//Elements
+		var BlockAnimating = false;
+		var BlockClosed = false;
+		var SliderClosed = false;
+		var LobbySliderClosed = true;
+		var Close_Block_Button, Video_Slider, Video_Wrapper, Close_Slider_Button, Input_Slider;
+		var Input_Id, Submit_Video_Button, Video_Input, Lobby_Slider;
+
+		document.addEventListener("DOMContentLoaded", contentLoader, false);
+
+		function contentLoader() {
+			document.getElementById("userBlock").style.left = window.innerWidth - 300 + "px";
+
+			Video_Input = document.getElementById("videoInput");
+
+			Lobby_Slider = document.getElementById("lobbySlider");
+
+			Submit_Video_Button = document.getElementById("submitVideo");
+			Submit_Video_Button.addEventListener("click", SubmitVideo, false);
+
+			Close_Slider_Button = document.getElementById("closeVideoSlider");
+			Close_Slider_Button.addEventListener("click", CloseSlider, false);
+			Video_Slider = document.getElementById("videoSlider");
+			Video_Wrapper = document.getElementById("videoWrapper");
+			Video_Wrapper.style.left = (window.innerWidth/2) - 360 + "px";
+			Video_Wrapper.style.top = Math.floor(window.innerHeight * 0.2) + "px";
+			var valX = parseInt(Video_Wrapper.style.left.substring(0, Video_Wrapper.style.left.length-2));
+			var valY = parseInt(Video_Wrapper.style.top.substring(0, Video_Wrapper.style.top.length-2));
+			Video_Slider.style.left = (valX -70) + "px";
+			Video_Slider.style.top = (valY) + "px";
+			Input_Slider = document.getElementById("inputSlider");
+			Input_Slider.style.left = valX + "px";
+			Input_Slider.style.top = valY + 405 + "px";
+			Lobby_Slider.style.left = (valX + 720-175) + "px"
+			Lobby_Slider.style.top = (valY) + "px"
+
+			Close_Block_Button = document.getElementById("closeUserBlock");
+			Close_Block_Button.addEventListener("click", CloseUserBlock, false);
+
+			Input_Id = document.getElementById("invis");
+			Input_Id.addEventListener("focusout", IdChange, false);
+		}
+
+		function ToggleLobbySlider() {
+			var slider = $("#lobbySlider");
+			console.log(slider, LobbySliderClosed);
+			console.log("anim");
+			if(LobbySliderClosed) {
+				LobbySliderClosed = false;
+				slider.animate({
+					left: "+=175"
+				}, 1000);
+			} else {
+				LobbySliderClosed = true;
+				slider.animate({
+					left: "-=175"
+				}, 1000);
+			}
+		}
+
+		function KickUser(e) {
+			var id = e.target.id;
+			socket.emit("kickUser", {id: id});
+
+		}
+
+		function MakeAdmin(e) {
+			var id = e.target.id;
+			socket.emit("adminUser", {id: id});
+		}
+
+		function IdChange(e) {
+			var newId = e.value;
+			if(newId != localId) {
+				socket.emit("changeId", {id: newId});
+			}
+		}
+
+
+		function SubmitVideo(e) {
+
+
+			var url = Video_Input.value;
+			var result = validateYouTubeUrl(url);
+			if(result) {
+				socket.emit("startVideo", {url: url});
+			} else {
+				N.Notify({
+					text: "Error: Invalid Youtube URL",
+					type: "danger",
+					duration: 6,
+					slideSpeed: "fast"
+				});
+			}
+		}
+
+		socket.on("updateLobby", function(data) {
+			var lobby = data.lobby;
+			var LobbyList = $("#lobbyList");
+			LobbyList.empty();
+			for(var i in lobby) {
+				var client = lobby[i];
+				if(client) {
+					console.log(client.id);
+					var newElem = $("<li class='lobby_ready'>Client Id: " + client.id + "</li>");
+					var innerElem = $("<button id='"+ client.id.toString() +"' class='makeAdminButton'><b id='" + client.id.toString() + "'>Make Admin</b></button>");
+					innerElem[0].addEventListener("click",  MakeAdmin, false);
+					var innerElem2 = $("<button id='"+ client.id.toString() +"' class='kickbutton'><b id='" + client.id.toString() + "'>Kick</b></button>");
+					innerElem2[0].addEventListener("click", KickUser, false);
+					newElem.append(innerElem);
+					newElem.append(innerElem2);
+					LobbyList.append(newElem);
+				}
+			}
+		});
+
+		socket.on("startVideoAgain", function(data) {
+			console.log("GOT START COMMAND");
+			$("#lobbyList > li").each(function() {
+				var elem = $(this)[0];
+				elem.className = "lobby_ready";
+			});
+			player.seekTo(data.time);
+			player.playVideo();
+		});
+		socket.on("pauseVideo", function(data) {
+			ToPause = true;
+			$("#lobbyList > li").each(function() {
+				var elem = $(this).attr('id');
+				console.log(elem);
+				if(elem == data.id) {
+					$(this)[0].className = "lobby_paused";
+				}
+			});
+			player.pauseVideo();
+		});
+
+		socket.on("loadVideo", function(data) {
+			InitialStart = true;
+			var urlId = getVidURL(data);
+			player.loadVideoById(urlId, 5, "large");
+			//player.stopVideo();
+			player.seekTo(0);
+
+		});
+
+		socket.on("startFailReady", function(data) {
+			console.log("failed");
+		});
+
+		socket.on("madeAdmin", function(data) {
+			N.Notify({
+				text: "You have been made a session admin!",
+				duration: 6
+			});
+			console.log("done");
+		});
+
+		socket.on("madeOwner", function(data) {
+			N.Notify({
+				text: "You have been made the session owner!",
+				duration: 6
+			});
+		});
+
+		function CloseSlider(e) {
+			if(!BlockAnimating) {
+				BlockAnimating = true;
+				var elem = $("#videoSlider");
+				if(!SliderClosed) {
+					//Close slider...
+					elem.animate({
+						left: "+=50"
+					}, 300);
+					var angle = 180;
+					$({deg: 0}).animate({deg: angle}, {
+							duration: 500,
+							step: function(now) {
+								Close_Slider_Button.style.transform = "rotate(" + now + "deg)"
+							}
+					});
+					$("#options_list > li").each(function() {
+						$(this)[0].className = "animated fadeOutRight";
+					});
+					BlockAnimating = false;
+					SliderClosed = true;
+				} else {
+					//Open slider...
+					elem.animate({
+						left: "-=50"
+					}, 300);
+					var angle = 0;
+					$({deg: 180}).animate({deg: angle}, {
+						duation: 500,
+						step: function(now) {
+							Close_Slider_Button.style.transform = "rotate(" + now + "deg)";
+						}
+					});
+					$("#options_list > li").each(function() {
+						$(this)[0].className = "animated fadeInRight";
+					});
+					BlockAnimating = false;
+					SliderClosed = false;
+				}
+			}
+		}
+
+		function CloseUserBlock(e) {
+			if(!BlockAnimating) {
+				var elem = $("#userBlock");
+				BlockAnimating = true;
+				if(!BlockClosed) {
+					elem.animate({
+						left: "+=280"
+					}, 1000);
+					var angle = 180;
+					$({deg: 0}).animate({deg: angle}, {
+							duration: 500,
+							step: function(now) {
+								Close_Block_Button.style.transform = "rotate(" + now + "deg)"
+							}
+					});
+					BlockAnimating = false;
+					BlockClosed = true;
+				} else {
+					elem.animate({
+						left: "-=280"
+					}, 1000);
+					var angle = 0;
+					$({deg: 180}).animate({deg: angle}, {
+						duation: 500,
+						step: function(now) {
+							Close_Block_Button.style.transform = "rotate(" + now + "deg)";
+						}
+					});
+					BlockAnimating = false;
+					BlockClosed = false;
+				}
+			}
+		}
+
+		socket.on('receivedConnect', function(data) {
+			localId = data.id;
+			var idElem = document.getElementById("userId");
+			idElem.innerHTML = "#<input onfocusout='IdChange(this);' type='text' value='"+localId+"' id='invis'/>";
+			Input_Id = document.getElementById("invis");
+			console.log(Input_Id);
+			idElem.className = "animated fadeIn";
+			setTimeout(() => {
+				idElem.style.display = "block";
+			}, 1000)
+		});
+		socket.on('userDisconnected', function(data) {
+			N.Notify({
+				type: "danger",
+				text: "A new user has left the site!",
+				duration:5
+			})
+		});
+		socket.on('userConnected', function(data) {
+			N.Notify({
+				type: "success",
+				text: "A new user has entered the site!",
+				duration: 5
+			})
+			socket.on('failJoin', function(data) {
+				N.Notify({
+					type: "danger",
+					text: "Warning! Failed to join session.",
+					duration: 5
+				});
+			});
+		});
+
+		socket.on("kicked", function(data) {
+			var list = $("#lobbyList");
+			list.empty();
+			var newElem = $("<li id='kicked'>Kicked!</li>")
+			list.append(newElem);
+			setTimeout(() => {
+				ToggleLobbySlider();
+			}, 2000);
+		});
+
+		socket.on("successJoin", function(data) {
+			document.title = "Uredi | In Session";
+			console.log(data);
+			ChangeUrl("?session=wow", "?session=" + data.id);
+			N.Notify({
+				type: "success",
+				text: "Successfully joined session!",
+				duration: 6
+			});
+
+			ToSet = getVidURL(data);
+
+			ToggleLobbySlider();
+
+		});
+
+		var tag = document.createElement('script');
+
+		tag.src = "https://www.youtube.com/iframe_api";
+		var firstScriptTag = document.getElementsByTagName('script')[0];
+		firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+		// 3. This function creates an <iframe> (and YouTube player)
+		//    after the API code downloads.
+		var player;
+		function onYouTubeIframeAPIReady() {
+			//show link input.
+			if(ToSet) {
+				player = new YT.Player('player', {
+					height: '405',
+					width: '720',
+					videoId: ToSet,
+					events: {
+						'onReady': onPlayerReady,
+						'onStateChange': onPlayerStateChange
+					}
+				});
+			} else {
+				player = new YT.Player('player', {
+					height: '405',
+					width: '720',
+					events: {
+						'onReady': onPlayerReady,
+						'onStateChange': onPlayerStateChange
+					}
+				});
+			}
+		}
+
+		// 4. The API will call this function when the video player is ready.
+		function onPlayerReady(event) {
+			//event.target.playVideo();
+			//event.target.setPlaybackRate(2);
+		}
+
+		// 5. The API calls this function when the player's state changes.
+		//    The function indicates that when playing a video (state=1),
+		var done = false;
+		function onPlayerStateChange(event) {
+			//console.log("state change! + " + JSON.stringify(event) );
+			if(event.data == 2) {
+				//pauseVideo
+				if(!ToPause) {
+					socket.emit("videoPause", {});
+				} else {
+					ToPause = false;
+				}
+			}
+			if(event.data == 3) {
+				Buffering = true;
+				socket.emit("videoBuffer", {});
+			}
+			if(event.data == 1) {
+				console.log(Buffering);
+				if(true) {
+					InitialStart = false;
+					if(!Buffering) {
+						socket.emit("startVideoAgain", {time: player.getCurrentTime()});
+						$("#lobbyList > li").each(function() {
+							$(this)[0].className = "lobby_ready";
+						});
+					} else {
+						Buffering = false;
+					}
+				}
+			}
+		}
+		function stopVideo() {
+
+			player.stopVideo();
+		}
+
+		function validateYouTubeUrl(url)
+		{
+		        if (url != undefined || url != '') {
+		            var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|\?v=)([^#\&\?]*).*/;
+		            var match = url.match(regExp);
+		            if (match && match[2].length == 11) {
+		                // Do anything for being valid
+										return true;
+								}
+		            else {
+		                // Do anything for not being valid
+										return false;
+		            }
+		        }
+		}
+
+		function findGetParameter(parameterName) {
+
+				var result = null,
+						tmp = [];
+				location.search
+						.substr(1)
+						.split("&")
+						.forEach(function (item) {
+							tmp = item.split("=");
+							if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+						});
+				return result;
+		}
+		function ChangeUrl(title, url) {
+	    if (typeof (history.pushState) != "undefined") {
+	        var obj = { Title: title, Url: url };
+	        history.pushState(obj, obj.Title, obj.Url);
+	    } else {
+	        alert("Browser does not support HTML5.");
+	    }
+		}
+		var result = findGetParameter("session");
+		if( result != null) {
+			socket.emit("joinSession", {sessionId: result});
+		}
+
+		function getVidURL(data) {
+			var idPos = data.url.indexOf('v=');
+			var urlId = data.url.substring(idPos+2, data.url.length);
+			return urlId;
+		}
+		/*
+		setInterval(() => {
+			if(player) {
+				if(player.getPlayerState()) {
+					currentState = player.getPlayerState();
+					if(currentState == 2) {
+						//Paused...
+						if(!registerPause) {
+							registerPause = true;
+							socket.emit("videoPause", {time: player.getCurrentTime()});
+						}
+					} else if(currentState == 3) {
+						if(!registerBuffer) {
+							registerBuffer = true;
+							socket.emit("videoBuffer", {time: player.getCurrentTime()});
+						}
+					} else if(currentState == 1) {
+						registerBuffer = false;
+						registerPause = false;
+
+					}
+				}
+			}
+		}, 250);
+		*/
+
+	</script>
+</html>

@@ -1,0 +1,213 @@
+body {
+  background-image: url(../img/curls.png);
+  overflow-x: hidden;
+}
+*{ font-family: helvetica; margin: 0; padding: 0; }
+#lobbySlider {
+  background-color: #222222;
+  position: absolute;
+  width: 175px;
+  height: 405px;
+  top: 0;
+  left: 0;
+  border: 2px solid #7c0e9e;
+  text-align: center;
+  color: white;
+
+}
+.lobby_ready { color : green; }
+.lobby_paused { color : orange; }
+.lobby_frozen { color : red; }
+#lobbySlider ul li {
+  padding-top: 20px;
+  padding-bottom: 20px;
+  transition: all 0.5s ease;
+}
+#lobbySlider ul li:hover {
+  background-color: black;
+
+}
+#lobbySlider h3 {
+  margin-top: 20px;
+}
+
+#userId {
+  margin-top: 16px;
+  color: white;
+  display: none;
+}
+#userBlock h2 {
+  padding-top: 10px;
+  padding-bottom: 5px;
+
+}
+#userBlock hr {
+  width: 17vw;
+  margin: auto;
+  border-color: grey;
+}
+#closeUserBlock {
+  display: inline-block;
+  float: left;
+  margin-top: 36px;
+  margin-left: 5px;
+  width: auto;
+  padding: 0;
+  cursor: pointer;
+}
+.content {
+  display: inline-block;
+}
+#userBlock {
+  color: #7c0e9e;
+  position: absolute;
+  background-color: #222222;
+  width: 20vw;
+  height: 100px;
+  left: 79vw;
+  top: 2vh;
+  text-align:center;
+  border: 2px solid #111111;
+}
+
+#userBlockButton {
+  background-color: #222222;
+  border: 2px solid #111111;
+  position: absolute;
+  left: 90vw;
+  top: 2vh;
+  width: 15px;
+  height: 100px;
+}
+
+#videoWrapper {
+  width: 720px;
+  height: 405px;
+  background-color: black;
+  position: absolute;
+  border: 2px solid #7c0e9e;
+  z-index: 1;
+}
+
+#videoSlider {
+  background-color: #111111;
+  width: 70px;
+  height: 405px;
+  position: absolute;
+  z-index: 0;
+  border: 2px solid #7c0e9e;
+  color: #7c0e9e;
+}
+#closeVideoSlider {
+  display: inline-block;
+  float: left;
+  vertical-align: center;
+  margin-top: 200px;
+  margin-left: 5px;
+  cursor: pointer;
+}
+#invis {
+  background-color: transparent;
+  font-size: 20px;
+  color: white;
+  border: none;
+  width: auto;
+  text-align: center;
+}
+#invis:focus {
+  outline-width: 0px;
+}
+.inputItems {
+  margin-top: 15px;
+}
+.inputItems input {
+  width: 500px;
+  border-radius: 4px;
+}
+.inputItems button {
+  background-color: #222222;
+  color: white;
+  padding: 3px;
+  transition: all 0.3s ease;
+  margin-left: 10px;
+  border: 1px solid #7c0e9e;
+  text-align: center;
+}
+.inputItems button:hover {
+  background-color: #7c0e9e;
+  border-color: #222222;
+}
+#inputSlider {
+  color: #7c0e9e;
+  width: 720px;
+  height: 50px;
+  background-color: #111111;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 2px solid #7c0e9e;
+  text-align: center;
+  vertical-align: center;
+
+}
+#options_list {
+  list-style: none;
+  text-decoration: none;
+}
+#options_list li {
+  width: 32px;
+  height: 32px;
+  background-color: #333333;
+  border-radius: 50%;
+  margin-right: 20px;
+  margin-top: 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+#options_list li:hover {
+  background-color: #7c0e9e;
+}
+#options_list li:hover p {
+  color: black;
+}
+#options_list li p {
+  padding-top: 5px;
+  margin-left: -1px;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+#options {
+  display: inline-block;
+  float: right;
+}
+
+.makeAdminButton {
+  background-color: #222222;
+  border-radius: 4px;
+  border: 2px solid #7c0e9e;
+  cursor: pointer;
+  padding: 5px;
+  margin-top: 10px;
+
+  transition: all 0.3s ease;
+
+}
+.makeAdminButton:hover {
+  background-color: #7c0e9e;
+  color: white;
+}
+.kickbutton {
+  background-color: #222222;
+  border-radius: 4px;
+  border: 2px solid #7c0e9e;
+  cursor: pointer;
+  padding: 5px;
+  margin-top: 10px;
+  margin-left: 10px;
+}
+.kickbutton:hover {
+  background-color: #7c0e9e;
+  color: white;
+}
