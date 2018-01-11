@@ -18,6 +18,12 @@ body {
 .lobby_ready { color : green; }
 .lobby_paused { color : orange; }
 .lobby_frozen { color : red; }
+
+#lobbyList {
+	overflow-y: auto;
+	list-style: none;
+	height: 330px;
+}
 #lobbySlider ul li {
   padding-top: 20px;
   padding-bottom: 20px;
@@ -229,6 +235,7 @@ body {
 	width: 260px;
 	margin-top: 20px;
 	height: 280px;
+	overflow-y: auto;
 }
 #lobbyChat li {
 	margin-left: 20px;
@@ -260,4 +267,29 @@ body {
 #sendChatButton:hover {
 	background-color: #7c0e9e;
 }
+
+
+#lobbyChat::-webkit-scrollbar {
+    width: 7px;
+}
+ #lobbyChat::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+}
+ 
+#lobbyChat::-webkit-scrollbar-thumb {
+  background-color: #7c0e9e;
+  outline: 1px solid slategrey;
+}
+#lobbyList::-webkit-scrollbar {
+    width: 7px;
+}
+ #lobbyList::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+}
+ 
+#lobbyList::-webkit-scrollbar-thumb {
+  background-color: #7c0e9e;
+  outline: 1px solid slategrey;
+}
+
 
