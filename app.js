@@ -59,7 +59,11 @@ io.sockets.on('connection', function(socket){
 			var session = SESSIONS[socket.session.sessionId];
 			if(session) {
 				if(session.lobby.length == 1) {
-					delete SESSIONS[socket.session.sessionId];
+					if(socket.session.sessionId != "hello") {
+						delete SESSIONS[socket.session.sessionId];
+					} else {
+						SESSIONS[socket.session.sessionId].lobby = [];
+					}
 				} else {
 					//Remove self from current session lobby.
 					for(var i in session.lobby) {
@@ -75,6 +79,8 @@ io.sockets.on('connection', function(socket){
 							break;
 						}
 					}
+					session.messages.push({message:"User '" + socket.id + "' has left!",sender:"Lobby"});
+					EmitForLobby(session, "updateChat", session.messages);
 
 					//Update lobby listing for all lobby members.
 					EmitForLobby(session, "updateLobby", {lobby: session.lobby});
@@ -98,16 +104,26 @@ io.sockets.on('connection', function(socket){
 		if(SESSIONS[data.sessionId]) {
 			//Join session.
 			var session = SESSIONS[data.sessionId];
-			session.lobby.push({id: socket.id, canQueue: true, videoTime: 0, frozen: false, ready: true, isAdmin: false, isOwner: false});
-			SOCKET_LIST[socket.id].session = {sessionAdmin: false, sessionOwner: false, inSession:true,sessionId:data.sessionId};
+			if(session.lobby.length == 0) { 
+				session.lobby.push({id: socket.id, canQueue: true, videoTime: 0, frozen: false, ready: true, isAdmin: true, isOwner: true});
+				SOCKET_LIST[socket.id].session = {sessionAdmin: true, sessionOwner: true, inSession:true,sessionId:data.sessionId};
+			} else {
+				session.lobby.push({id: socket.id, canQueue: true, videoTime: 0, frozen: false, ready: true, isAdmin: false, isOwner: false});
+				SOCKET_LIST[socket.id].session = {sessionAdmin: false, sessionOwner: false, inSession:true,sessionId:data.sessionId};
+			}
 			socket.emit("successJoin", {id: data.sessionId, url: session.currentUrl, isPlaying: session.isPlaying, messages: session.messages});
+			
+			
 			for(var i in session.lobby) {
 				var client = session.lobby[i];
 				var clientSocket = SOCKET_LIST[client.id];
 				if(client && clientSocket) {
 					clientSocket.emit("updateLobby", {lobby: session.lobby});
+					
 				}
 			}
+			session.messages.push({message:"User '" + socket.id + "' has joined!",sender:"Lobby"});
+			EmitForLobby(session, "updateChat", session.messages);
 		} else {
 			socket.emit("failJoin", {});
 		}
@@ -163,10 +179,14 @@ io.sockets.on('connection', function(socket){
 						console.log("send to " + client.id);
 						clientSocket.emit("updateLobby", {lobby: session.lobby});
 						clientSocket.emit("loadVideo", {url: data.url});
+						
 					} else {
 						console.log("No client glitch!");
 					}
+					
 				}
+				session.messages.push({message:"New video started by: " + socket.id,sender:"Lobby"});
+				EmitForLobby(session, "updateChat", session.messages);
 			} else {
 				//One or more lobby clients aren't ready.
 				socket.emit("startFailReady", {});
@@ -186,7 +206,7 @@ io.sockets.on('connection', function(socket){
 			var session = SESSIONS[SOCKET_LIST[socket.id].session.sessionId];
 			if(session) {
 				for(var i in session.lobby) {
-					var clientId = session.lobby[i];
+					var clientId = session.lobby[i].id;
 					if(clientId == oldId) {
 						session.lobby.splice(i, 1);
 						session.lobby.push(socket.id);
